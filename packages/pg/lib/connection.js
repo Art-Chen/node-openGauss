@@ -3,7 +3,7 @@
 var net = require('net')
 var EventEmitter = require('events').EventEmitter
 
-const { parse, serialize } = require('pg-protocol')
+const { parse, serialize } = require('../../pg-protocol')
 
 const flushBuffer = serialize.flush()
 const syncBuffer = serialize.sync()

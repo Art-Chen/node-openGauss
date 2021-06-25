@@ -24,6 +24,7 @@ import {
   BackendMessage,
   MessageName,
   AuthenticationMD5Password,
+  AuthenticationSHA256Password,
   NoticeMessage,
 } from './messages'
 import { BufferReader } from './buffer-reader'
@@ -312,6 +313,7 @@ export class Parser {
       name: 'authenticationOk',
       length,
     }
+    console.log("Art_Chen code " + code);
 
     switch (code) {
       case 0: // AuthenticationOk
@@ -328,26 +330,24 @@ export class Parser {
           return new AuthenticationMD5Password(length, salt)
         }
         break
-      case 10: // AuthenticationSASL
-        message.name = 'authenticationSASL'
-        message.mechanisms = []
-        let mechanism: string
-        do {
-          mechanism = this.reader.cstring()
+      case 10: // AuthenticationSHA256Password // In openGauss, code 10 is auth in sha256 method
+        message.name = 'authenticationSHA256Password'
+        // Read the params from the Stream.
+        // Based on jdbc org.postgresql.core.v3.ConnectionFactoryImpl.doAuthentication
+        // case AUTH_REQ_SHA256 (10)
+        const passwordStoredMethod = this.reader.bytes(4).readInt32BE(0);
+        const random64code = this.reader.bytes(64).toString();
+        const token = this.reader.bytes(8).toString();
 
-          if (mechanism) {
-            message.mechanisms.push(mechanism)
-          }
-        } while (mechanism)
-        break
-      case 11: // AuthenticationSASLContinue
-        message.name = 'authenticationSASLContinue'
-        message.data = this.reader.string(length - 8)
-        break
-      case 12: // AuthenticationSASLFinal
-        message.name = 'authenticationSASLFinal'
-        message.data = this.reader.string(length - 8)
-        break
+        // Hard Code Server Interation to the PBKDF2 Default Value
+        const server_iteration = 10000;
+
+        console.log("Art_Chen entered AuthenticationSHA256Password");
+	      // console.log("passwordStoredMethod " + passwordStoredMethod);
+        // console.log("random64code " + random64code);
+        // console.log("server_iteration " + server_iteration);
+        // console.log("token " + token);
+        return new AuthenticationSHA256Password(length, random64code, token, server_iteration)
       default:
         throw new Error('Unknown authenticationOk message type ' + code)
     }
