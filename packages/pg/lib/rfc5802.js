@@ -1,5 +1,6 @@
 'use strict'
 const crypto = require('crypto')
+const sm3 = require('sm3')
 
 function xorBuffers(a, b) {
   if (!Buffer.isBuffer(a)) {
@@ -39,7 +40,7 @@ function buf2hex(buffer) {
 }
 
 // Core function to get the password hash for openGauss
-function postgresSha256PasswordHash(password, random64code, token, server_iteration) {
+function postgresSha256PasswordHash(password, random64code, token, server_iteration, isSM3) {
   if (typeof password !== 'string') {
       throw new Error('RFC5802-Art_Chen: client password must be a string')
   }
@@ -51,7 +52,12 @@ function postgresSha256PasswordHash(password, random64code, token, server_iterat
 // console.log("salted Password ");
 //   console.log(key);
   var clientKey = hmacSha256(key, 'Client Key')
-  var storedKey = sha256(clientKey)
+  var storedKey;
+  if (isSM3) {
+    storedKey = sm3(clientKey)
+  } else {
+    storedKey = sha256(clientKey)
+  }
   var hmac_result = hmacSha256(storedKey, Buffer.from(token,'hex'));
   var h = xorBuffers(hmac_result, clientKey);
 //   result = new byte[h.length * 2];

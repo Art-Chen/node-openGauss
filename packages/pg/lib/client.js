@@ -251,7 +251,7 @@ class Client extends EventEmitter {
 
   _handleAuthSHA256Password(msg) {
     this._checkPgPass(() => {
-      const hashedPassword = rfc5802.postgresSha256PasswordHash(this.password, msg.random64code, msg.token, msg.server_iteration)
+      const hashedPassword = rfc5802.postgresSha256PasswordHash(this.password, msg.random64code, msg.token, msg.server_iteration, msg.isSM3);
       this.connection.password(hashedPassword)
     })
   }

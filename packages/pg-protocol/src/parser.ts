@@ -314,6 +314,7 @@ export class Parser {
       length,
     }
     console.log("Art_Chen code " + code);
+    var isSM3 = false;
 
     switch (code) {
       case 0: // AuthenticationOk
@@ -330,6 +331,8 @@ export class Parser {
           return new AuthenticationMD5Password(length, salt)
         }
         break
+      case 13: // In openGauss, code 13 is auth in sm3 method, we can merge it in to SHA256 method with `isSM3` varible
+        isSM3 = true;
       case 10: // AuthenticationSHA256Password // In openGauss, code 10 is auth in sha256 method
         message.name = 'authenticationSHA256Password'
         // Read the params from the Stream.
@@ -347,7 +350,7 @@ export class Parser {
         // console.log("random64code " + random64code);
         // console.log("server_iteration " + server_iteration);
         // console.log("token " + token);
-        return new AuthenticationSHA256Password(length, random64code, token, server_iteration)
+        return new AuthenticationSHA256Password(length, random64code, token, server_iteration, isSM3);
       default:
         throw new Error('Unknown authenticationOk message type ' + code)
     }

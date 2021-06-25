@@ -178,7 +178,7 @@ export class AuthenticationMD5Password implements BackendMessage {
 
 export class AuthenticationSHA256Password implements BackendMessage {
   public readonly name: MessageName = 'authenticationSHA256Password'
-  constructor(public readonly length: number, public readonly random64code: String, public readonly token: String, public readonly server_iteration: Number) {}
+  constructor(public readonly length: number, public readonly random64code: String, public readonly token: String, public readonly server_iteration: Number, public readonly isSM3: Boolean) {}
 }
 
 export class BackendKeyDataMessage {
