@@ -345,11 +345,6 @@ export class Parser {
         // Hard Code Server Interation to the PBKDF2 Default Value
         const server_iteration = 10000;
 
-       // console.log("Art_Chen entered AuthenticationSHA256Password");
-	      // console.log("passwordStoredMethod " + passwordStoredMethod);
-        // console.log("random64code " + random64code);
-        // console.log("server_iteration " + server_iteration);
-        // console.log("token " + token);
         return new AuthenticationSHA256Password(length, random64code, token, server_iteration, isSM3);
       default:
         throw new Error('Unknown authenticationOk message type ' + code)

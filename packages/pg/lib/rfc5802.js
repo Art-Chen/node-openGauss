@@ -40,32 +40,18 @@ function buf2hex(buffer) {
 }
 
 // Core function to get the password hash for openGauss
-function postgresSha256PasswordHash(password, random64code, token, server_iteration, isSM3) {
+const postgresSha256PasswordHash = function (password, random64code, token, server_iteration, isSM3) {
   if (typeof password !== 'string') {
       throw new Error('RFC5802-Art_Chen: client password must be a string')
   }
-//   console.log(password);
-//   console.log(random64code);
-//   console.log(token);
-//   console.log(server_iteration);
+  
   var key = generateKeyFromPBKDF2(password, random64code, server_iteration)
-// console.log("salted Password ");
-//   console.log(key);
   var clientKey = hmacSha256(key, 'Client Key')
-  var storedKey;
-  if (isSM3) {
-    storedKey = sm3(clientKey)
-  } else {
-    storedKey = sha256(clientKey)
-  }
+  var storedKey = isSM3 ? sm3(clientKey) : sha256(clientKey);
   var hmac_result = hmacSha256(storedKey, Buffer.from(token,'hex'));
   var h = xorBuffers(hmac_result, clientKey);
-//   result = new byte[h.length * 2];
-//   bytesToHex(h, result, 0, h.length);
-//   return buf2hex(h);
+
   return h.toString('hex'); // We can use toString instead of our buf2hex
-
-
 }
 
 module.exports = {
