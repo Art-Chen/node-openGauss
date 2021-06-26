@@ -313,7 +313,7 @@ export class Parser {
       name: 'authenticationOk',
       length,
     }
-    console.log("Art_Chen code " + code);
+    //console.log("Art_Chen code " + code);
     var isSM3 = false;
 
     switch (code) {
@@ -345,7 +345,7 @@ export class Parser {
         // Hard Code Server Interation to the PBKDF2 Default Value
         const server_iteration = 10000;
 
-        console.log("Art_Chen entered AuthenticationSHA256Password");
+       // console.log("Art_Chen entered AuthenticationSHA256Password");
 	      // console.log("passwordStoredMethod " + passwordStoredMethod);
         // console.log("random64code " + random64code);
         // console.log("server_iteration " + server_iteration);
