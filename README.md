@@ -1,119 +1,146 @@
-# node-postgres
+English | [简体中文](README(CHN).md)
 
-[![Build Status](https://secure.travis-ci.org/brianc/node-postgres.svg?branch=master)](http://travis-ci.org/brianc/node-postgres)
-<span class="badge-npmversion"><a href="https://npmjs.org/package/pg" title="View this project on NPM"><img src="https://img.shields.io/npm/v/pg.svg" alt="NPM version" /></a></span>
-<span class="badge-npmdownloads"><a href="https://npmjs.org/package/pg" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/pg.svg" alt="NPM downloads" /></a></span>
+# demand
+  Node-OpenGauss is implemented based on Node-PostGre.Achieve SHA256 encryption connection
 
-Non-blocking PostgreSQL client for Node.js. Pure JavaScript and optional native libpq bindings.
+# node-opengauss
 
-## Monorepo
+A simple [openGauss](https://opengauss.org) client for Node.js based on [node-postgres](https://github.com/brianc/node-postgres).
 
-This repo is a monorepo which contains the core [pg](https://github.com/brianc/node-postgres/tree/master/packages/pg) module as well as a handful of related modules.
+## Install
 
-- [pg](https://github.com/brianc/node-postgres/tree/master/packages/pg)
-- [pg-pool](https://github.com/brianc/node-postgres/tree/master/packages/pg-pool)
-- [pg-cursor](https://github.com/brianc/node-postgres/tree/master/packages/pg-cursor)
-- [pg-query-stream](https://github.com/brianc/node-postgres/tree/master/packages/pg-query-stream)
-- [pg-connection-string](https://github.com/brianc/node-postgres/tree/master/packages/pg-connection-string)
-- [pg-protocol](https://github.com/brianc/node-postgres/tree/master/packages/pg-protocol)
+```
+npm install
+```
 
-## Documentation
+##  Test Case
 
-Each package in this repo should have its own readme more focused on how to develop/contribute. For overall documentation on the project and the related modules managed by this repo please see:
+```javascript
+const { Pool, Client } = require('./lib')
 
-### :star: [Documentation](https://node-postgres.com) :star:
 
-The source repo for the documentation is https://github.com/brianc/node-postgres-docs.
+const pgConfig = {
+  user: '*********',
+  database: 'postgres',
+  password: '********',
+  host: '************',
+  port: 5432,
+}
+const pool = new Pool(pgConfig)
 
-### Features
+pool.on('error', (err, result) => {
+  return console.error('catch error: ', err)
+})
 
-- Pure JavaScript client and native libpq bindings share _the same API_
-- Connection pooling
-- Extensible JS ↔ PostgreSQL data-type coercion
-- Supported PostgreSQL features
-  - Parameterized queries
-  - Named statements with query plan caching
-  - Async notifications with `LISTEN/NOTIFY`
-  - Bulk import & export with `COPY TO/COPY FROM`
+pool.connect((err, client, release) => {
+  if (err) {
+    return console.log('can not connect to postgresql server.')
+  }
+  client.query('DROP TABLE test;')
+  client.query(`CREATE TABLE test
+  (
+      c_customer_sk             integer
+  );`)
+  client.query('insert into test values(1111)', (err, res) => {
+    console.log(res)
+  })
+  client.query('update test set c_customer_sk = 2222', (err, res) => {
+    console.log(res)
+  })
+  client.query('SELECT * FROM test;', (err, res) => {
+    console.log(res)
+  })
+  client.query('delete from test where c_customer_sk = 2222', (err, res) => {
+    console.log(res)
+  })
+  client.query('SELECT * FROM test;', (err, res) => {
+    console.log(res)
+  })
+  release()
+  return console.log('connect to postgresql successfully!')
+})
+function rollback(client) {
+  //terminating a client connection will
+  //automatically rollback any uncommitted transactions
+  //so while it's not technically mandatory to call
+  //ROLLBACK it is cleaner and more correct
+  return client
+    .query('ROLLBACK')
+    .then(() => client.end())
+    .catch(() => client.end())
+}
 
-### Extras
+```
 
-node-postgres is by design pretty light on abstractions. These are some handy modules we've been using over the years to complete the picture.
-The entire list can be found on our [wiki](https://github.com/brianc/node-postgres/wiki/Extras).
+## Development
 
-## Support
+Development on MacOS/Linux is preferred :)
 
-node-postgres is free software. If you encounter a bug with the library please open an issue on the [GitHub repo](https://github.com/brianc/node-postgres). If you have questions unanswered by the documentation please open an issue pointing out how the documentation was unclear & I will do my best to make it better!
+1. Please deploy OpenGauss on `CentOS 7` or `openEuler 20.3 LTS`
+2. Ensure you have a openGauss instance running, follow this https://opengauss.org/zh/docs/2.0.1/docs/Quickstart/Quickstart.html to set up it
 
-When you open an issue please provide:
 
-- version of Node
-- version of Postgres
-- smallest possible snippet of code to reproduce the problem
+### Run the project
 
-You can also follow me [@briancarlson](https://twitter.com/briancarlson) if that's your thing. I try to always announce noteworthy changes & developments with node-postgres on Twitter.
+Navigate to `examples` and run following to test driver:
 
-## Sponsorship :two_hearts:
+```bash
+/*
+  example
+*/
+cd packages/pg/  
+node test-1.js
+```
 
-node-postgres's continued development has been made possible in part by generous finanical support from [the community](https://github.com/brianc/node-postgres/blob/master/SPONSORS.md) and these featured sponsors:
+## Notes
 
-<div align="center">
-  <p>
-    <a href="https://crate.io" target="_blank">
-      <img height="80" src="https://node-postgres.com/crate-io.png" />
-    </a>
-  </p>
-  <p>
-    <a href="https://www.eaze.com" target="_blank">
-      <img height="80" src="https://node-postgres.com/eaze.png" />
-    </a>
-  </p>
-</div>
+- [Configure the client access authentication method](https://opengauss.org/zh/docs/2.0.1/docs/Developerguide/%E9%85%8D%E7%BD%AE%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%8E%A5%E5%85%A5%E8%AE%A4%E8%AF%81.html)
+- [Please refer to here for specific implementation]
+  (https://github.com/brianc/node-postgres)
+- [Refer to the JDBC driver for encryption]
+  (https://gitee.com/opengauss/openGauss-connector-jdbc)
 
-If you or your company are benefiting from node-postgres and would like to help keep the project financially sustainable [please consider supporting](https://github.com/sponsors/brianc) its development.
+## Posts
 
-## Contributing
 
-**:heart: contributions!**
+- [SEMMNI ERROR]
 
-I will **happily** accept your pull request if it:
+  When doing simpleinstall, we may get this error
+  
+  `"On systemwide basis, the maximum number of SEMMNI is not correct. the current SEMMNI value is: .... Please check it."`
 
-- **has tests**
-- looks reasonable
-- does not break backwards compatibility
+  According to the installation script, SEMMNI should be greater than 321.875
 
-If your change involves breaking backwards compatibility please please point that out in the pull request & we can discuss & plan when and how to release it and what type of documentation or communication it will require.
+  On CentOS 7 we can do this to modify it
+  ``` bash
+  $ sudo vim /etc/sysctl.conf
+  ```
+  Add this line to the end of file
 
-### Setting up for local development
+  `kernel.sem = 250 32000 100 400`
 
-1. Clone the repo
-2. From your workspace root run `yarn` and then `yarn lerna bootstrap`
-3. Ensure you have a PostgreSQL instance running with SSL enabled and an empty database for tests
-4. Ensure you have the proper environment variables configured for connecting to the instance
-5. Run `yarn test` to run all the tests
+  Then use `shift + double z` or `:wq` to save and exit the `vim`
 
-## Troubleshooting and FAQ
+  Finally execute it to apply our settings
+  ``` bash
+  $ /sbin/sysctl -p 
+  ```
 
-The causes and solutions to common errors can be found among the [Frequently Asked Questions (FAQ)](https://github.com/brianc/node-postgres/wiki/FAQ)
+- [The account was locked]
 
-## License
+  Enter the gsql on your server
 
-Copyright (c) 2010-2020 Brian Carlson (brian.m.carlson@gmail.com)
+  Then run this
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+  alter user <i>`[username]`</i> account unlock;
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+- [Adding IPv4 rules allows all external links to the password to be verified by SHA256]
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+  Open this file: `/opt/software/openGauss/data/single_node/pg_hba.conf`
+
+  add this:     `host    all        all         0.0.0.0/0           sha256 `
+
+- [GUC]
+  
+  Click [here](https://opengauss.org/zh/docs/1.0.0/docs/Quickstart/GUC%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E.html)
+
